@@ -1,0 +1,77 @@
+﻿participant,keep,keep_reason_fordrop,group,age_mos,age_yrs,language,sex,block1,parental_ed
+301,0,pilot with earlier version of experiment,TD,109,9.08,English,F,order1,1
+302,1,,ASD,106,8.83,English,M,order2,0
+303,0,pilot with earlier version of experiment,TD,108,9,English,F,order1,1
+304,1,,ASD,105,8.75,English,M,order1,1
+305,0,pilot with earlier version of experiment,TD,123,10.25,English,F,order1,NA
+306,1,,ASD,120,10,English,M,order1,0
+307,1,,TD,100,8.33,English,F,order1,1
+308,0,did not complete second block of trials,ASD,113,9.42,English,F,order2,0
+309,0,did not meet inclusion criteria,TD,81,6.75,English,M,order2,NA
+310,1,,ASD,114,9.5,English,F,order1,1
+311,1,,TD,127,10.58,English,M,order1,1
+312,1,,ASD,129,10.75,English,M,order2,0
+313,1,,TD,103,8.58,English,M,order2,0
+314,1,,ASD,122,10.17,English,M,order1,0
+315,1,,TD,92,7.67,English,M,order1,1
+316,0,incomplete testing,ASD,84,7,English,M,order2,NA
+317,1,,TD,90,7.5,English,F,order2,1
+318,1,,ASD,93,7.75,English,M,order1,0
+319,1,,TD,87,7.25,English,M,order2,1
+321,1,,TD,117,9.75,English,F,order2,0
+322,1,,ASD,94,7.83,English,M,order2,1
+323,1,,TD,126,10.5,English,M,order1,1
+324,1,,ASD,82,6.83,English,M,order2,0
+325,1,,TD,116,9.67,English,F,order1,0
+326,1,,ASD,87,7.25,English,M,order2,0
+327,1,,TD,91,7.58,English,M,order1,1
+328,0,does not meet criteria for ASD,ASD,,,English,M,,NA
+329,1,,TD,106,8.83,English,M,order2,1
+330,1,,ASD,137,11.42,English,M,order2,0
+331,1,,TD,118,9.83,English,M,order1,0
+332,1,,ASD,124,10.33,English,M,order2,1
+333,1,,TD,97,8.08,English,M,order2,1
+337,1,,TD,100,8.33,English,M,order1,1
+339,1,,TD,110,9.17,English,M,order1,0
+341,1,,TD,110,9.17,English,M,order2,1
+343,1,,TD,124,10.33,English,M,order2,1
+345,0,did not meet inclusion criteria,TD,117,9.75,English,F,order2,0
+347,1,,TD,122,10.17,English,M,order2,1
+349,1,,TD,78,6.5,English,M,order1,1
+351,1,,TD,88,7.33,English,M,order2,1
+401,1,,TD,85,7.08,French,F,order1,1
+402,1,,ASD,136,11.33,French,M,order1,1
+403,1,,TD,83,6.92,French,M,order2,0
+404,1,,ASD,113,9.42,French,F,order2,1
+405,1,,TD,107,8.92,French,F,order1,1
+406,1,,ASD,122,10.17,French,M,order1,1
+407,1,,TD,93,7.75,French,M,order2,1
+408,1,,ASD,82,6.83,French,F,order2,0
+409,1,,TD,90,7.5,French,F,order1,0
+410,1,,ASD,97,8.08,French,M,order1,0
+411,1,,TD,111,9.25,French,M,order2,0
+412,1,,ASD,103,8.58,French,M,order2,1
+413,1,,TD,105,8.75,French,F,order1,1
+414,1,,ASD,104,8.67,French,M,order1,0
+415,1,,TD,109,9.08,French,M,order2,1
+416,1,,ASD,111,9.25,French,M,order2,1
+417,1,,TD,95,7.92,French,M,order2,1
+418,1,,ASD,111,9.25,French,M,order2,0
+419,1,,TD,122,10.17,French,M,order1,1
+420,1,,ASD,80,6.67,French,M,order1,0
+421,1,,TD,108,9,French,M,order1,1
+423,1,,TD,121,10.08,French,M,order2,0
+424,1,,ASD,107,8.92,French,M,order2,1
+425,1,,TD,108,9,French,M,order2,1
+427,1,,TD,111,9.25,French,F,order1,1
+428,1,,ASD,101,8.42,French,M,order1,1
+429,1,,TD,125,10.42,French,M,order1,1
+430,1,,ASD,100,8.33,French,M,order1,1
+431,1,,TD,128,10.67,French,M,order2,1
+433,1,,TD,104,8.67,French,M,order2,1
+435,1,,TD,107,8.92,French,M,order2,0
+437,1,,TD,116,9.67,French,F,order1,1
+439,1,,TD,80,6.67,French,F,order1,1
+441,1,,TD,104,8.67,French,M,order1,1
+443,1,,TD,103,8.58,French,M,order1,1
+445,1,,TD,98,8.17,French,M,order1,1
