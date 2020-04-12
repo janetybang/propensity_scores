@@ -1,15 +1,13 @@
 ---
-title: "A tutorial to select participants and create two balanced groups using propensity scores"
-author: "Janet Bang, Megha Sharda, and Aparna Nadig"
-date: "February 9, 2020"
+title: "A tutorial to select participants and create <br> two balanced groups using propensity scores"
+author: "[Janet Y. Bang, Megha Sharda, and Aparna Nadig](https://github.com/janetybang/propensity_scores)"
+date: "last update: `r format(Sys.Date(), format = '%d %B %Y')`"
 output:
   html_document:
+    code_folding: hide
+    theme: yeti
     toc: yes
     toc_float: yes
-  pdf_document:
-    toc: yes
-  word_document:
-    toc: yes
 ---
 
 ```{r, echo=FALSE}
@@ -18,6 +16,24 @@ opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, cache=FALSE)
 
 knitr::opts_chunk$set(fig.width = 11, fig.height = 7) 
 ```
+<br>
+
+This code follows the workflow below to select participants for matched groups (Bang, Sharda, & Nadig, in preparation). Please refer to Code buttons to show/hide code as desired.
+
+A template of this workflow can be found [here](https://osf.io/6a3e4/).
+
+ Step 1: Assess data
+
+ Step 2: Select covariates
+
+ Step 3: Conduct matching
+
+ Step 4: Diagnose matching
+
+ NOTE: Steps 3-4 are iterated until matching is satisfactory
+<br>
+<br>
+
 
 ### Load libraries and set theme
 ```{r}
@@ -30,7 +46,7 @@ library(gridExtra)
 
 theme_set(theme_bw())
 ```
-
+<br>
 
 ### Import files with data
 ```{r}
@@ -40,30 +56,19 @@ leiter <- read_csv("./data/leiter.csv")
 scq <- read_csv("./data/scq.csv")
 vineland <- read_csv("./data/vineland.csv")
 ```
-
-
-
-
-This code follows four main steps to select participants for matched groups. A discussion of matching and a tutorial of these steps can be seen in Bang, Sharda, and Nadig (in preparation):
-
- Step 1: Assess data
-
- Step 2: Select covariates
-
- Step 3: Conduct matching
-
- Step 4: Diagnose matching
-
- NOTE: Steps 3-4 are iterated until matching is satisfactory
+<br>
+<br>
  
- 
- 
+
 # Step 1: Assess data
 
-Five TD children and three children from the ASD group were tested but excluded from the study. The final possible sample size to include is 43 TD children and 25 children with ASD. 
+**The final possible sample size includes 43 TD children and 25 children with ASD.**
 
-### Select participants to include for group matching and combine data to one dataframe
+Five TD children and three children from the ASD group were tested but excluded from the study. 
+
+### Select participants to include for matching and combine data into one dataframe
 ```{r}
+# create new df
 df <- demo %>% 
   filter(keep == 1) %>% # final children to include
   left_join(celf, by = "participant") %>% 
@@ -71,20 +76,20 @@ df <- demo %>%
   left_join(scq, by = "participant") %>% 
   left_join(vineland, by = "participant")
 
+# sample size count
 df %>% group_by(group) %>% count()
 ```
-
-
-
+<br>
+<br>
 
 
 # Step 2: Select covariates
 
-Prior to data collection, we considered multiple covariates that could influence children’s performance on the experimental tasks. Ultimately, we could not include all possible covariates given our sample size, thus we decided on our final two covariates of age and IQ. 
+Prior to data collection, we considered multiple covariates that could influence children’s performance on the experimental tasks. Ultimately, we could not include all possible covariates given our sample size, thus we describe how we decided on our final two covariates of **age and IQ**. 
 
-Initial covariates under consideration were based on their known relationships with referential gaze following and word learning in experimental tasks. These covariates included: age, nonverbal IQ, language ability, sex, and parental education. We decided to exclude covariates of sex and parental education. Though both variables are known to be related to broader language abilities in the general population, we prioritized age, nonverbal IQ, and language ability due to their known relations with referential gaze following and word learning in children with ASD.
+The initial covariates we considered were based on their known relationships with referential gaze following and word learning in experimental tasks. These covariates included: age, nonverbal IQ, language ability, sex, and parental education. We decided to exclude covariates of sex and parental education. Though both variables are known to be related to language abilities in the general population, we prioritized age, nonverbal IQ, and language ability due to their known relations with referential gaze following and word learning in children with ASD.
 
-Given the differences seen in language abilities (particularly on Recalling Sentences and Word Classes), we determined that matching groups on one or more language measures in addition to age and IQ would likely result in excluding some of our 25 children with ASD. Thus, in order to retain as many children as possible, we chose not to include language abilities as a covariate in our matching process. 
+We examined the distributions and interrelations between age, nonverbal IQ, and language abilities seen in the figure below, comparing similarities and differences in their distributions between groups. From these plots we concluded that while distributions were similar on age and IQ, wide heterogeneity was seen in the ASD group on language variables that were not seen to the same extent in the TD group. Whereas the ASD group ranged from 2 SD below the mean to 2 SD above the mean on all three language measures, the TD group was generally within 1 SD of the mean. For Recalling Sentences, the distribution of scores in the TD group was skewed with 72% at or above the mean, whereas this was the case for only 40% children with ASD. In contrast to the different distributions between groups on Word Classes and Recalling Sentences, the performance of children with ASD and TD children were more similarly distributed on Word Associations. Thus in their language abilities, children with ASD versus TD children demonstrated both similarities and weaknesses on measures of semantic language (Word Classes, Word Associations), but also weaker structural language abilities (Recalling Sentences). 
 
 
 ### Select participant variables
@@ -97,7 +102,7 @@ df2 <- df %>%
 
 
 ### Create matrix of covariates to consider for propensity scores
-```{r}
+```{r, fig.cap="CELF-4-RS = CELF-4 Recalling Sentences (scaled scores); CELF-4-WC = CELF-4 Word Classes (scaled scores) and CELF-4-WA = CELF-4 Word Associations (raw scores, because no normative data is provided). The density plots arranged diagonally and the histograms at the bottom of the figure can be used to compare the distribution of scores in ASD and TD groups. The scatterplots and correlations on either side of the density plots can be used to examine the strength of the relation between variables both within and across groups. The boxplots and bar graphs on the right-hand side provide another way to compare distributions between groups."}
 mtx <- df2 %>% 
   select("age_yrs", "leiter_composite", "celf4_RS_scaled", "celf4_WC_total_scaled", "celf4_WA_total", "group") %>% 
   rename("Age (yr)" = age_yrs, "Leiter (IQ)" = leiter_composite, "CELF4-RS" = celf4_RS_scaled, 
@@ -119,8 +124,23 @@ corr_mtx
 ggsave("./plots/corr_mtx.pdf", height = 8, width = 11, units = "in")
 ```
 
+Taken together, these findings indicated that matching on all variables of age, nonverbal IQ, and the three language measures would likely result in less than half of our sample of children with ASD to be matched to a group with TD children. Because our outcome variable (i.e., word learning) was related to language abilities, if groups were different on language abilities where TD children had stronger language abilities than children with ASD, then any group differences could be interpreted as relating to the covariate of language abilities. However, we considered how this would affect our primary outcome measure of interest, which was not an overall comparison of word learning abilities in children with ASD versus the TD children. Our primary interest was to examine whether groups differed in their performance on word learning during two different experimental conditions (i.e., learning with referential gaze versus learning with an arrow cue). There was no theoretical or evidence-based rationale for either children with ASD or TD children that language abilities would differentially influence learning with referential gaze versus learning with an arrow. If anything, it seemed that weaker or stronger language abilities would have weaker or stronger word learning, respectively. Thus, we reasoned that it did not seem likely that differences between groups on language ability would considerably cloud our interpretation of our primary outcome of interest.
 
-### Descriptive statistics of IQ and age before matching
+To retain as many children with ASD as possible, we matched on age and nonverbal IQ because groups were similarly distributed on these measures and both covariates have demonstrated relations with referential gaze following and word learning. The choice of two covariates followed the guidelines by Blackford, of maintaining an approximate ratio of 5-10 participants per covariate (2007). Additionally, another bonus of including all children with ASD was that the sample would reflect the known heterogeneity seen in language abilities. We decided to further investigate the role of language ability on our experimental measures as a part of our exploratory analyses.
+<br>
+<br>
+
+
+# Step 3: Conduct matching
+
+**We used the MatchIt package (Ho et al., 2011) in R version 3.5.0 (R Core Team, 2018) to apply both the nearest neighbor and optimal matching algorithms.**
+
+Both algorithms resulted in the same 25 typically-developing children chosen as matches to the 25 children with ASD. 
+<br>
+
+As seen in the table below, if we included all 25 children with ASD, the overall mean of nonverbal IQ is significantly higher in the TD group than in the ASD group (p = .039), although on age both groups share similar means and standard deviations (p = .570). Thus, our next step was to select participants such that groups were balanced on both age and nonverbal IQ.
+
+### Examine descriptive statistics of age and IQ before matching
 ```{r}
 # subset only age and IQ
 df2_age_IQ <- df2 %>% 
@@ -134,15 +154,6 @@ print(df2_age_IQ_compare_tbl, header.labels = c(p.overall = "p-value"))
 ```
 
 
-
-
-
-
-
-# Step 3: Conduct matching
-
-We used the MatchIt package (Ho et al., 2011) in R version 3.5.0 (R Core Team, 2018) to apply both the nearest neighbor and optimal matching algorithms. Both algorithms resulted in the same 25 typically-developing children chosen as matches to the 25 children with ASD. 
-
 ### Create dataframe with covariates to be used for propensity scores
 ```{r}
 df_ps_n68 <- df2 %>% 
@@ -151,39 +162,29 @@ df_ps_n68 <- df2 %>%
 ```
 
 
-### Nearest neighbor n = 68
+### Conduct Nearest neighbor algorithm: n = 68
 ```{r}
 # apply matching
 m_near_n68 <- matchit(group.int ~ age_yrs + leiter_composite, 
                      data = df_ps_n68, method = "nearest")
 
-# summary
-summary(m_near_n68, data = df_ps_n68)
-
 # obtain list of matched participants
 m_near_n68_df <- match.data(m_near_n68)
-head(m_near_n68_df)
-m_near_n68_df$participant
 ```
 
 
-### Optimal matching n = 68
+### Conduct Optimal matching algorithm: n = 68
 ```{r}
 # apply matching
 m_opt_n68 <- matchit(group.int ~ age_yrs + leiter_composite, 
                      data = df_ps_n68, method = "optimal")
 
-# summary
-summary(m_opt_n68, data = df_ps_n68)
-
 # obtain list of matched participants
 m_opt_n68_df <- match.data(m_opt_n68)
-head(m_opt_n68_df)
-m_opt_n68_df$participant
 ```
 
 
-### Check to see participants selected in nearest neighbor and optimal matching methods
+### Compare participants selected with nearest neighbor vs. optimal matching
 ```{r}
 m_near_n68_part <- m_near_n68_df$participant
 m_opt_n68_part <- m_opt_n68_df$participant
@@ -191,13 +192,16 @@ m_opt_n68_part <- m_opt_n68_df$participant
 check_n68_df <- cbind(m_near_n68_part, m_opt_n68_part)
 check_n68_df
 ```
-
+<br>
+<br>
 
 # Step 4: Diagnose matching
+We first examined how well groups were matched on their propensity scores. As seen in the figure below, visual inspection of propensity score plots depicted the same ASD participant with a high propensity score (this participant has a propensity score of approximately 0.8 in the Matched Treatment Units group) without a close match among the selected matches in the TD group (Matched Control Units). We next examined matching of propensity scores based on cut-off values proposed in the literature: a maximum standardized mean difference (*d*) of approximately .25, and variance ratios (vr) within the range of .5 to 2. The *d* value was close to the maximum of .25 and the vr was within the acceptable range (*d* = .24, vr = 1.46). Given the high standardized mean difference and the outlier seen in the propensity score plot, we removed the outlier ASD participant and conducted nearest neighbor and optimal matching methods with a revised sample of 24 children with ASD and 43 TD children.
+
 
 ### Propensity scores distribution
-We first examined how well groups were matched on their propensity scores. A visual inspection of the propensity score plot depicted the same ASD participant with a high propensity score without a close match in the TD group. This score meant that this participant had a high conditional probability of being assigned to the ASD group given the child’s age and IQ. We next examined matching of propensity scores based on cutoff values in the literature: standardized mean difference (d) close to an absolute difference of .25 and variance ratios within .5 to 2 (vr). As seen in the table below, Cohen's d was close to .25 although the vr was within the acceptable range (d = .24, vr = 1.46). Given the high standardized mean difference and the outlier seen in the propensity score plot, we removed the outlier ASD participant and conducted nearest neighbor and optimal matching methods with a revised sample of 24 children with ASD and 43 TD children.
-```{r}
+
+```{r, fig.cap="Children with ASD = Matched Treatment Units; selected matches of TD children = Matched Control Units; remaining unmatched TD children = Unmatched Control Units. Propensity scores calculated using the nearest neighbor and optimal matching methods resulted in the same values. This plot indicates the distribution of propensity scores when including covariates of age and IQ for all 25 children with ASD and 43 TD children. We see a similar distribution of propensity scores for Matched Treatment Units and Matched Control units, ranging from scores of 0.2 to above 0.6. Among the Matched Treatment Units there appears to be one outlier where a child with ASD was assigned a propensity score of approximately 0.8."}
 # Nearest neighbor (the same participant is identified using the optimal matching method)
 plot(m_near_n68, type = "jitter")
 
@@ -206,9 +210,9 @@ m_near_n68_df %>% filter(distance > .7)
 ```
 
 
-### Standardized mean difference and variance ratios
+### Calcuate standardized mean differences and variance ratios
 ```{r}
-# NOTE: both methods have the same participants, so either method will provide the same scores. Both are presented here for clarity.
+# NOTE: both nearest neighbor and optimal matching methods have the same participants, so either method will provide the same scores. Scores from both methods are presented here for clarity.
 # Nearest neighbor
 # a) create vectors with data in asd and td group
 near_asd_n68 <- m_near_n68_df %>% 
@@ -241,11 +245,12 @@ opt_td_n68 <- m_opt_n68_df %>%
 # c) variance ratio
 (sd(opt_asd_n68$distance)^2) / (sd(opt_td_n68$distance)^2)
 ```
+<br>
+<br>
 
 
-
-# Step 3 with revised sample (24 ASD, 42 TD): Conduct matching
-The second iteration using the revised sample resulted in 24 children with ASD matched to 24 TD children. Different children were selected for matched groups when using the nearest neighbor or optimal matching. Propensity score distributions did not indicate clear outliers with either method. However, an examination of standardized mean differences and variance ratios indicated that the optimal matching method was better than the nearest neighbor results (optimal: d = .14, vr = 1.04; nearest neighbor: d = .24, vr = 1.32). These findings suggest that the optimal matching method with 24 children per group resulted in balanced groups.  
+# Step 3 with revised sample (24 ASD, 42 TD): <br> Conduct matching
+**The second iteration using the revised sample resulted in 24 children with ASD matched to 24 TD children.** In this iteration different children were selected for matched groups when using nearest neighbor or optimal matching. Propensity score distributions did not indicate clear outliers with either method. However, an examination of standardized mean differences and variance ratios indicated that the optimal matching method was better than the nearest neighbor results (optimal: *d* = .14, vr = 1.05; nearest neighbor: *d* = .24, vr = 1.32). These findings suggest that the optimal matching method with 24 children per group resulted in better balanced groups.   
 
 ### Remove participant in ASD group with high propensity score
 ```{r}
@@ -259,40 +264,36 @@ df_ps_n67 %>% count(group)
 ```
 
 
-### Nearest neighbor n = 67
+### Conduct Nearest neighbor algorithm: n = 67
 ```{r}
 # apply matching
 m_near_n67 <- matchit(group.int ~ age_yrs + leiter_composite, 
                      data = df_ps_n67, method = "nearest")
 
-# summary
-summary(m_near_n67, data = df_ps_n67)
-
 # obtain list of matched participants
 m_near_n67_df <- match.data(m_near_n67)
-head(m_near_n67_df)
 m_near_n67_df$participant
 ```
 
 
-### Optimal matching n = 67
+### Conduct Optimal matching algorithm: n = 67
 ```{r}
 # 1) Run logistic regressions
 # runs logistic regression to create matched sample
 m_opt_n67 <- matchit(group.int ~ age_yrs + leiter_composite, 
                      data = df_ps_n67, method = "optimal")
 
-# summary
-summary(m_opt_n67, data = df_ps_n67)
-
 # obtain list of matched participants
 m_opt_n67_df <- match.data(m_opt_n67)
-head(m_opt_n67_df)
 m_opt_n67_df$participant
 ```
-
+<br>
+<br>
 
 # Step 4 with revised sample (24 ASD, 42 TD): Diagnose matching
+**The optimal method with 24 ASD, 24 TD established balanced groups on the desired covariates of age and IQ.**
+
+The final step in diagnosing groups is to determine how well groups are matched on each covariate included in the propensity score, as well as any other covariates considered of interest in the study. Prior to determining propensity scores, the only variable where we expected group differences was on language variables, which we decided a priori not to incorporate in matching as discussed above. Guidelines to evaluate well matched groups on each covariate included examination of boxplots (where one would observe significant overlap when groups are well-balanced), p values > .5, Cohen’s *d* close to 0, and variance ratios close to 1 (5,13,14). Cohen’s *d* was calculated using the compute.es package with formulas in line with Kover and Atwood (2013). The use of Cohen’s *d* and variance ratios are recommended as alternatives to inferential statistics such as p values, due to difficulties with establishing equivalence with inferential statistics. 
 
 ### Propensity scores distribution
 ```{r}
@@ -305,7 +306,7 @@ plot(m_opt_n67, type = "jitter")
 ```
 
 
-### Standardized mean difference and variance ratios
+### Calculate standardized mean differences and variance ratios
 ```{r}
 # Nearest neighbor
 # a) create vectors with data in asd and td group
@@ -339,19 +340,17 @@ opt_td_n67 <- m_opt_n67_df %>%
 (sd(opt_asd_n67$distance)^2) / (sd(opt_td_n67$distance)^2)
 ```
 
-The final step in diagnosing groups is to determine how well groups are matched on each covariate included in the propensity score, as well as any other covariates considered of interest in the study (Blackford, 2007; Ho, Imai, King, & Stuart, 2007; Stuart, 2010). Prior to determining propensity scores, the only variable where we expected group differences was on language variables due to their already different distributions. Guidelines to evaluate well matched groups on each covariate (e.g., nonverbal IQ, age) included examination of boxplots, p values > .5 (Kover & Atwood, 2013; Mervis & Robinson, 1999; Mervis & Klein-Tasman, 2004), Cohen’s d close to 0, and variance ratios close to 1. Cohen’s d was calculated with formulas in line with Kover and Atwood (2013). The use of Cohen’s d and variance ratios are recommended as alternatives to inferential statistics such as p values, due to difficulties with establishing equivalence with inferential statistics (Kover & Atwood, 2013). 
-
-
-As seen in the table below, our final revised sample with the optimal matching method resulted in two groups successfully balanced according to criteria listed above in their distribution for our covariates of interest, IQ and age. We next examined other variables not included in our propensity score (29). The matched groups met the cut-off for p values > .5 on the ratio of English- to French-speaking children. On measures of sex, maternal education level, and CELF-4 Word Association, groups were not significantly different but did not meet recommended cutoffs of values noted above. As expected prior to selecting participants, groups were significantly different in their distribution on language measures of Recalling Sentences and Word Classes. Additionally, as expected due to diagnoses, groups were significantly different on social skills measures of the SCQ and VABS-II.
-
-Lastly, we verified the distribution of children for randomized factors (i.e., block order). As seen in the table above including descriptive statistics, the same proportion of children had both block orders. In sum, the optimal method with 24 ASD, 24 TD established balanced groups on desired covariates of age and IQ.
-
 
 ### Get list of matched participants and all covariates to report in study
+As seen in the table and figure below, our final revised sample with the optimal matching method resulted in two successfully balanced groups according to criteria listed above on our covariates of interest, age and IQ. We next examined other variables not included in our propensity scores. The matched groups also met the cut-off for *p* values > .5 on the ratio of English- to French-speaking children. On measures of sex, parental education level, and CELF-4 Word Association, groups were not significantly different (*p*’s between .136 and .461), but these values did not meet recommended cutoffs noted above. As expected prior to selecting participants, groups were significantly different in their distribution on language measures of Recalling Sentences and Word Classes. Additionally, as expected due to diagnoses, groups were significantly different on social skills measures of the SCQ and VABS-II Socialization domain. 
+
+Lastly, we verified the distribution of children for randomized experimental factors (i.e., block order). As seen in the table below including descriptive statistics, the same proportion of children had both block orders. 
 ```{r}
+# get list of participants
 matchit_list <- m_opt_n67_df %>% 
   select(participant)
 
+# create df with participants in matched groups
 df_matchit <- df2 %>% 
   right_join(matchit_list, by = "participant") %>% 
   select(-c(keep, celf4_WC_rec_scaled, celf4_WC_exp_scaled)) %>% 
@@ -359,54 +358,12 @@ df_matchit <- df2 %>%
          sex = factor(sex), parental_ed = factor(parental_ed), 
          block1 = factor(block1))
 
+# check number of rows of participants
 nrow(df_matchit)
 ```
 
 
-### Violin plots to examine continuous variables
-```{r}
-p1 <- ggplot(df_matchit, aes(group, age_yrs, fill = group)) + 
-  geom_violin(alpha = .7) + 
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "Age (yrs)", x = "")
-p2 <- ggplot(df_matchit, aes(group, leiter_composite, fill = group)) + 
-  geom_violin(alpha = .7) + 
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "Nonverbal IQ (Leiter)", x = "")
-p3 <- ggplot(df_matchit, aes(group, celf4_WA_total, fill = group)) + 
-  geom_violin(alpha = .7) + 
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "CELF-4 Word Associations", x = "")
-
-p4 <- ggplot(df_matchit, aes(group, celf4_RS_scaled, fill = group)) + 
-  geom_violin(alpha = .7) + 
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "CELF-4 Recalling Sentences", x = "")
-p5 <- ggplot(df_matchit, aes(group, celf4_WC_total_scaled, fill = group)) + 
-  geom_violin(alpha = .7) + 
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "CELF-4 Word Classes", x = "")
-p6 <- ggplot(df_matchit, aes(group, scq_total, fill = group)) + 
-  geom_violin(alpha = .7) + 
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "Social Communication Questionnaire", x = "")
-p7 <- ggplot(df_matchit, aes(group, social_standScore, fill = group)) + 
-  geom_violin(alpha = .7) +
-  geom_jitter(alpha = .3) +
-  theme(legend.position = "none", axis.text=element_text(size=15)) + 
-  labs(y = "Vineland Socialization Domain", x = "")
-
-grid.arrange(p1, p2, p3, p4, p5, p6, p7, nrow = 2)
-```
-
-
-### Inferential statistics
+### Calculate inferential statistics
 ```{r}
 # remove participant column to run compareGroups
 df_matchit2 <- df_matchit %>% 
@@ -419,8 +376,7 @@ compare_group_tbl <- createTable(compare_group, digits = 2, type = 1, show.n = T
 print(compare_group_tbl, header.labels = c(p.overall = "p-value"))
 ```
 
-
-### Cohen's d and variance ratios
+### Calculate Cohen's *d* and variance ratios
 ```{r}
 # create separate vectors for groups
 asd <- df_matchit %>% 
@@ -506,14 +462,58 @@ effect_sizes %>%
 
 ```
 
+### Create violin plots to examine continuous variables
+```{r, fig.cap="Points represent observations per participant. For age and nonverbal IQ, matching was achieved according to criteria of p > .5, Cohen’s *d* close to 0, and variance ratios close to 1. CELF-4 Word Associations did not meet criteria of *p* > .5, but between groups the distribution on this variable appears similar between groups. Groups are significantly different on other language measures of CELF-4 Recalling Sentences and Word Classes, as well as the Social Communication Questionnaire (SCQ) and the Vineland Socialization Domain."}
+p1 <- ggplot(df_matchit, aes(group, age_yrs, fill = group)) + 
+  geom_violin(alpha = .7) + 
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "Age (yrs)", x = "")
+p2 <- ggplot(df_matchit, aes(group, leiter_composite, fill = group)) + 
+  geom_violin(alpha = .7) + 
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "Nonverbal IQ (Leiter)", x = "")
+p3 <- ggplot(df_matchit, aes(group, celf4_WA_total, fill = group)) + 
+  geom_violin(alpha = .7) + 
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "CELF-4 Word Associations", x = "")
+
+p4 <- ggplot(df_matchit, aes(group, celf4_RS_scaled, fill = group)) + 
+  geom_violin(alpha = .7) + 
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "CELF-4 Recalling Sentences", x = "")
+p5 <- ggplot(df_matchit, aes(group, celf4_WC_total_scaled, fill = group)) + 
+  geom_violin(alpha = .7) + 
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "CELF-4 Word Classes", x = "")
+p6 <- ggplot(df_matchit, aes(group, scq_total, fill = group)) + 
+  geom_violin(alpha = .7) + 
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "Social Communication Questionnaire", x = "")
+p7 <- ggplot(df_matchit, aes(group, social_standScore, fill = group)) + 
+  geom_violin(alpha = .7) +
+  geom_jitter(alpha = .3) +
+  theme(legend.position = "none", axis.text=element_text(size=15)) + 
+  labs(y = "Vineland Socialization Domain", x = "")
+
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, nrow = 2)
+```
+<br>
+<br>
 
 
 # Examine matched groups when including age, nonverbal IQ, and language (Recalling Sentences)
 
-We explored matches when including three covariates of age, nonverbal IQ, and language. As seen below, both nearest neighbor and optimal matching resulted in selecting different potential matches of TD children, but there were still 8 children with ASD whose propensity scores were outside the range of all typically-developing children. An examination of balancing on propensity scores and individual covariates indicates that only age meets the desired cutoff of p > .5, and the distribution of CELF-4 Recalling Sentences appears substantially different between both groups (ps < .5 for two variables, propensity score Cohen’s d > .5 and propensity score variance ratios > 3). 
+To examine the consequences of matching on age, nonverbal IQ and language, we conducted the nearest neighbor and optimal matching methods with all three variables. We chose the Recalling Sentences measure to represent our language variable, because on Word Classes one child with ASD was unable to complete the measure and on Word Associations the distribution between groups in the full sample appeared similar (see above matrix). Including all three variables of age, nonverbal IQ and language resulted in different sets of typically-developing children as potential matches for the 25 children with ASD with either the nearest neighbor or the optimal matching algorithm; selected participants were the same for children with ASD using either method. However, these matched groups with either matching method resulted in less well-balanced matches than with just age and IQ. 
 
-Due to the poor balancing when including all three proposed covariates, this evidence supports balancing on two covariates of age and nonverbal IQ. Our visual analysis of language measures prior to data analyses confirms these post-hoc exploratory analyses. We initially chose to match only on age and nonverbal IQ because we wanted to retain as many children in the sample as possible. Additionally, because language abilities of children with ASD were not categorically poorer across all three measures relative to TD children, it was unclear which language measure to match on when intercorrelations between language measures ranged widely across the full sample (rs = .28 - .72), within ASD (rs = .34 - .84) and within TD children (rs = .09 - .47). Therefore, matching groups on covariates of age and nonverbal IQ appear to be both theoretically supported based on prior studies and empirically supported by the current evidence with our sample.
+For example, as seen in the figure below, an examination of the distribution of propensity scores with the nearest neighbor algorithm demonstrated that 8 children with ASD were outside the range of propensity scores relative to the rest of the children with ASD and TD children. The table below also describes the descriptive and inferential statistics of propensity scores and covariates when including age, nonverbal IQ, and CELF-4 Recalling Sentences. Only the variable of age meets the desired cutoff of *p* > .5, and the distribution of CELF-4 Recalling Sentences still appears substantially different between both groups (propensity score Cohen’s *d* > .5, propensity score variance ratios > 3, and ps < .5 for two of three variables). 
 
+Due to the poor balancing when including all three proposed covariates, this evidence supports balancing on two covariates of age and nonverbal IQ to retain as many children in the sample as possible. Additionally, because language abilities of children with ASD were not categorically poorer across all three measures relative to TD children, it is unclear which language measure to match on when intercorrelations between language measures ranged widely across the full sample (*r*s = .28 - .72), within ASD (*r*s = .34 - .84) and within TD children (*r*s = .09 - .47). Therefore, matching groups on covariates of age and nonverbal IQ appear to be both theoretically supported based on prior studies and empirically supported by the current evidence with our sample.
 
 ### Select covariates
 ```{r}
@@ -523,24 +523,20 @@ df_ps_n68_3cov <- df2 %>%
 ```
 
 
-### Nearest neighbor n = 68 - including age, IQ, and language (Recalling Sentences)
+### Conduct Nearest neighbor algorithm: n = 68 including age, IQ, and language (Recalling Sentences)
 ```{r}
 # apply matching
 m_near_n68_3cov <- matchit(group.int ~ age_yrs + leiter_composite + celf4_RS_scaled, 
                      data = df_ps_n68_3cov, method = "nearest")
 
-# summary
-summary(m_near_n68_3cov, data = df_ps_n68_3cov)
-
 # obtain list of matched participants
 m_near_n68_3cov_df <- match.data(m_near_n68_3cov)
-head(m_near_n68_3cov_df)
 m_near_n68_3cov_df$participant
 ```
 
 
 #### Diagnose matching - View propensity scores
-```{r}
+```{r, fig.cap="This plot indicates the distribution of propensity scores when including covariates of age, IQ, and CELF-4 Recalling Sentences for all 25 children with ASD and 43 TD children. Propensity scores were calculated using the optimal matching method. There are 8 children with ASD who appear to be outliers relative to the propensity scores for TD children. Children with ASD = Matched Treatment Units; selected matches of TD children = Matched Control Units; remaining unmatched TD children = Unmatched Control Units."}
 # View propensity scores
 plot(m_near_n68_3cov, type = "jitter")
 ```
@@ -581,18 +577,15 @@ print(age_IQ_language_compare_tbl, header.labels = c(p.overall = "p-value"))
 
 
 
-### Optimal matching n = 68 - including age, IQ, and language (Recalling Sentences)
+### Conduct Optimal matching algorithm: n = 68 including age, IQ, and language (Recalling Sentences)
 ```{r}
 # apply matching
 m_opt_n68_3cov <- matchit(group.int ~ age_yrs + leiter_composite + celf4_RS_scaled, 
                      data = df_ps_n68_3cov, method = "optimal")
 
-# summary
-summary(m_opt_n68_3cov, data = df_ps_n68_3cov)
 
 # obtain list of matched participants
 m_opt_n68_3cov_df <- match.data(m_opt_n68_3cov)
-head(m_opt_n68_3cov_df)
 m_opt_n68_3cov_df$participant
 ```
 
@@ -622,7 +615,6 @@ opt_td_n68_3cov <- m_opt_n68_3cov_df %>%
 (sd(opt_asd_n68_3cov$distance)^2) / (sd(opt_td_n68_3cov$distance)^2)
 ```
 
-
 #### Diagnose matching - Descriptive and inferential statistics on age, IQ, and language
 ```{r}
 # subset only age and IQ
@@ -649,5 +641,12 @@ age_IQ_language_compare_rm8asd <- compareGroups(group ~ age_yrs + leiter_composi
 age_IQ_language_compare_rm8asd_tbl <- createTable(age_IQ_language_compare_rm8asd, digits = 2, type = 1, show.n = TRUE)
 print(age_IQ_language_compare_rm8asd_tbl, header.labels = c(p.overall = "p-value"))
 
+```
+<br>
+<br>
+
+#### Session Info
+```{r}
+sessionInfo()
 ```
 
