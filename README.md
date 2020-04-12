@@ -1,4 +1,4 @@
-### This repository includes the following materials for how to use propensity scores to create matched groups. 
+### This repository includes the following materials for a tutorial of how to use propensity scores to create matched groups. 
 
 * Raw data files
 * Code of propensity score matching and data visualization
